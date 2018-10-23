@@ -30,6 +30,7 @@ $("#textarea").on('keypress', function(e) {
                 msg: this.value,
                 to: private2
             }, 'me');
+            this.value = ``;
         }
     }
 })
