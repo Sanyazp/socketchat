@@ -5,7 +5,7 @@ var http = require('http'),
     io = require('socket.io').listen(server);
 
 app.use(express.static('public'));
-var appPort = process.env.PORT || 3000;
+var appPort = 3000;
 server.listen(appPort, function() {
     console.log("Server listening on port " + appPort);
 });

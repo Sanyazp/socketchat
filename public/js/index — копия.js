@@ -2,13 +2,13 @@ var socket = io.connect(); // Соединение с сокетом
 var username = ''; // Имя текущего пользователя
 var usersArr; // Массив остальных пользователей с их socket ID для отправки личных сообщений
 var private = 'All Users'; // Переменная, куда записывается SocketID для отправки личных сообщений
-var private2 = 'All Users'; // Переменная с именем, кому отправить сообщение, а так же переключатель чтобы страница знала в каком диалоге сейчас пользователь
+var private2 = ''; // Переменная с именем, кому отправить сообщение, а так же переключатель чтобы страница знала в каком диалоге сейчас пользователь
 socket.on('connect', function() { // Коннект нового юзера
     console.log('connected');
 });
 
 socket.on('UsersOnline', function(msg) { // Событие отлавливающее изменение юзеров в чате, и меняющее их на странице
-    $("#usersOnline").html(`<img src="../images/online.png" alt="Online">\ \ ${msg.UO}`);
+    $("#usersOnline").html(`Users Online : ${msg.UO}`);
     usersArr = msg.array;
     usersOnlineColumn(usersArr);
     usersDialogsHider(usersArr);
@@ -41,32 +41,32 @@ function addMessageOnPage(data, who) {
     if (who == 'me') {
         html = `            <div class="messageInChat">
         <div class="messageClient">            <h2>${username}</h2>
-        <h4>${data.msg}</h4>
+        ${data.msg}
         </div></div>
     </div> `
-        document.querySelector(`[data-username="${data.to}"]`).innerHTML += html; // class > data-username
+        document.querySelector(`.${data.to}`).innerHTML += html; // class > data-username
     } else {
         if (!data.private) {
             html = `
             <div class="messageInChat">
                 <div class="messageManager">
                 <h2>${data.username}</h2>
-                <h4>${data.msg}</h4>
+                ${data.msg}
                 </div>
             </div>
                 `
-            document.querySelector(`[data-username="All Users"]`).innerHTML += html; // class > data-username
+            document.querySelector(`.All_Users`).innerHTML += html; // class > data-username
         } else {
             html = `
             <div class="messageInChat">
                 <div class="messageManager private">
                 <h2>${data.username}</h2>
-                <h4>${data.msg}</h4>
+                ${data.msg}
                 <span>Private Message from ${data.username}</span>
                 </div>
             </div>
                 `
-            document.querySelector(`[data-username="${data.username}"]`).innerHTML += html; // class > data-username
+            document.querySelector(`.${data.username}`).innerHTML += html; // class > data-username
         }
 
     }
@@ -77,15 +77,15 @@ function addMessageOnPage(data, who) {
 function usersOnlineColumn(array) {
     var parent = document.getElementById('users');
     parent.innerHTML = `
-    <div data-userkey="All Users" style="background: rgba(128, 128, 128, 0.3);">
-    <h2 data-userkey="All Users">All Users</h2>
+    <div id="All_Users">
+    <h2 data-username="All Users">All Users</h2>
     </div>
     `
     for (var i = 0; i < array.length; i++) {
         if (array[i].username !== username) { // ID > data-username
             parent.innerHTML += `
-            <div data-userkey="${array[i].username}">
-            <h2 data-userkey="${array[i].username}">${array[i].username}</h2>
+            <div id="${array[i].username}">
+            <h2>${array[i].username}</h2>
             </div>
             `
         } else {
@@ -106,9 +106,8 @@ function usersDialogsHider(array) {
         if (array[i].username == username) continue;
         var new_article = document.createElement('article');
         new_article.id = 'messages';
-        new_article.setAttribute('data-username', `${array[i].username}`);
+        new_article.classList.add(`${array[i].username}`);
         new_article.style.display = `none`;
-        new_article.innerHTML = `<h3>${array[i].username}</h3>`
         parent.insertBefore(new_article, textarea);
     }
 }
@@ -119,7 +118,7 @@ function usersDialogsUnHider(user) {
         if (i === parent.children.length - 1) {
             break;
         }
-        if (parent.children[i].getAttribute('data-username') == user) { // class > data-username
+        if (parent.children[i].classList.contains(user)) { // class > data-username
             parent.children[i].style.display = `block`;
         } else {
             parent.children[i].style.display = `none`;
@@ -130,7 +129,7 @@ function usersDialogsUnHider(user) {
 function userSelectDialog(target) {
     var parent = document.getElementById('users');
     for (var i = 0; i < parent.children.length; i++) {
-        if (parent.children[i].getAttribute('data-userkey') == target) { // id > data-users
+        if (parent.children[i].id === target) { // id > data-users
             parent.children[i].style.background = `rgba(128, 128, 128, 0.3)`;
         } else {
             parent.children[i].style.background = `#ffffff`;
@@ -141,32 +140,23 @@ function userSelectDialog(target) {
 
 // MODAL WINDOW //
 $('#users').on('click', function(e) {
-    usersDialogsUnHider(e.target.getAttribute('data-userkey'));
-    userSelectDialog(e.target.getAttribute('data-userkey'));
-    if (e.target.getAttribute('data-userkey') == 'All Users') {
+    usersDialogsUnHider(e.target.id);
+    userSelectDialog(e.target.id);
+    if (e.target.id == 'All_Users') {
         private = 'All Users';
-        private2 = 'All Users';
+        private2 = 'All_Users';
     } else {
         for (var i = 0; i < usersArr.length; i++) {
-            if (usersArr[i].username == e.target.getAttribute('data-userkey')) {
+            if (usersArr[i].username == e.target.id) {
                 private = usersArr[i].id;
                 break;
             }
         }
-        private2 = e.target.getAttribute('data-userkey');
+        private2 = e.target.id;
     }
-    console.log(e.target.getAttribute('data-userkey'));
+    console.log(e.target.id);
 })
-$(document).ready(function() {
-    $('#menuResp').on('click', function() {
-            if ($('#menuResp').attr('data-clicked') == 'true') {
-                $("article#users").css('display', 'block').css('width', "0%");
-                $('#menuResp').attr('data-clicked', 'false');
-            } else {
-                $("article#users").css('display', 'block').css('width', "40%");
-                $('#menuResp').attr('data-clicked', 'true');
-            }
-        }) // Когда загрузится страница появится модальное окно, спрашивающее юзернейм
+$(document).ready(function() { // Когда загрузится страница появится модальное окно, спрашивающее юзернейм
     $('#overlay').fadeIn(400, // снaчaлa плaвнo пoкaзывaем темную пoдлoжку
         function() { // пoсле выпoлнения предидущей aнимaции
             $('#modal_form')
@@ -176,7 +166,7 @@ $(document).ready(function() {
     /* Зaкрытие мoдaльнoгo oкнa, тут делaем тo же сaмoе нo в oбрaтнoм пoрядке */
 
     $('#modal_username_submit, #overlay').click(function() { // лoвим клик пo крестику или пoдлoжке
-        if (document.getElementById('modal_username').value !== '' && document.getElementById('modal_username').value.length < 10) { // Проверка, не пустой ли инпут
+        if (document.getElementById('modal_username').value !== '') { // Проверка, не пустой ли инпут
             username = document.getElementById('modal_username').value;
             socket.emit('username', username); // посылаем юзернейм на сервер
             console.log(username);; // Если не ввёл логин то не закрываем модальное окно

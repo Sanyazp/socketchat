@@ -14,19 +14,23 @@
 
 <body>
     <header>
-        <div id="usersOnline">
-            Users Online :
+        <div class="menu-responsive">
+            <img src="images/menu.png" id="menuResp" data-clicked='false' alt="">
         </div>
-        <h2>Sankyago Chat</h2>
+        <div id="usersOnline">
+        </div>
+        <h2> <img src="images/msg.png" alt=""></h2>
     </header>
     <section class="messanger">
         <article id="users">
-            <div>
+            <div style="background: rgba(128, 128, 128, 0.3);">
                 <h2>All Users</h2>
             </div>
         </article>
         <article class="chat">
-            <article id="messages" class="All_Users" style="display: none;"></article>
+            <article id="messages" data-username="All Users">
+                <h3>All Users</h3>
+            </article>
             <textarea name="" id="textarea" cols="30" rows="10"></textarea>
         </article>
     </section>
@@ -34,6 +38,7 @@
     <div id="modal_form">
         <h2>Enter Your Name</h2>
         <input type="text" id="modal_username">
+        <span>Username must be less then 10 symbols</span>
         <button id="modal_username_submit">Submit</button>
     </div>
     <div id="overlay"></div>
